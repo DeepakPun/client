@@ -1,5 +1,5 @@
 name: Testing continous integration and continous delivery
-on: push
+on: [push, workflow_dispatch]
 jobs:
   test:
     runs-on: ubuntu-latest
