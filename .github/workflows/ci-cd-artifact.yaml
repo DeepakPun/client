@@ -1,0 +1,72 @@
+name: Run lint, test and deploy jobs
+# on: push
+# on: issues
+# from the terminal, run ==> git commit -m "Added comments [skip ci]"
+# More @ https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/skipping-workflow-runs
+on:
+  # pull_request:
+  #   types:
+  #     - opened
+  #   branches:
+  #     - main
+  #     - 'dev-*' # specifying patterns
+  #     - 'feat/**'
+  # workflow_dispatch:
+  push:
+    branches:
+      - main
+      - 'dev-*' # specifying patterns
+      - 'feat/**'
+    paths-ignore:
+      - '.github/workflows/*'
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Install nodejs
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Lint
+        run: npm run lint
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Install nodejs
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Tests
+        run: npm run test
+  deploy:
+    needs: test # deploy job will not start until test job is finished
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Install nodejs
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: npm ci
+      - name: Build the project
+        run: npm run build
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-files
+          path: |
+            dist
+            package.json
+      - name: Deploy the site
+        run: echo "Deploying to your provider ..."
